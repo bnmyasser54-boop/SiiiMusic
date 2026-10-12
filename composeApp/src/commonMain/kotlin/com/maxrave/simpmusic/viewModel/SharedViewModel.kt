@@ -3,7 +3,6 @@ package com.maxrave.simpmusic.viewModel
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.viewModelScope
 import com.maxrave.common.AppIdentity
-import com.maxrave.common.Config
 import com.maxrave.common.Config.ALBUM_CLICK
 import com.maxrave.common.Config.DOWNLOAD_CACHE
 import com.maxrave.common.Config.PLAYLIST_CLICK
@@ -180,9 +179,6 @@ class SharedViewModel(
 
     private val _showNotificationPermissionDialog = MutableStateFlow(false)
     val showNotificationPermissionDialog: StateFlow<Boolean> = _showNotificationPermissionDialog
-
-    private val _isOfficialBuild = MutableStateFlow(true)
-    val isOfficialBuild: StateFlow<Boolean> = _isOfficialBuild
 
     // One-shot: the Desktop capsule asks the Now Playing panel, which hosts the page, to open
     // full-screen lyrics. The panel consumes it once shown.
@@ -1178,33 +1174,6 @@ class SharedViewModel(
             // Also for a channel neither branch handles, and for a check that throws: the launch
             // banner waits for this flag, so it must never stay raised.
             _isCheckingUpdate.value = false
-        }
-    }
-
-    /**
-     * [signingCerts]: SHA-256 hex of each certificate this APK is signed with. A failed fetch leaves
-     * the app usable — it plays offline, and an unknown answer must not lock out our own users.
-     */
-    fun checkOfficialBuild(
-        packageName: String,
-        signingCerts: List<String>,
-    ) {
-        // This explicitly named fork uses its own package ID by design so it can coexist with
-        // upstream. It is not pretending to be an official SimpMusic package, so skip the
-        // upstream package/signing-certificate gate for this one build identity.
-        if (packageName == "com.maxrave.atomiicMusic.mod") return
-        if (packageName !in Config.OFFICIAL_PACKAGE_NAMES) {
-            _isOfficialBuild.value = false
-            return
-        }
-        viewModelScope.launch {
-            updateRepository.getFdroidSigningKeys().collect { response ->
-                val keys = response.data
-                // No certificate read at all is an unknown answer, and unknown never blocks.
-                if (response is Resource.Success && keys != null && signingCerts.isNotEmpty() && keys.none { it in signingCerts }) {
-                    _isOfficialBuild.value = false
-                }
-            }
         }
     }
 
