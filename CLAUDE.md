@@ -165,6 +165,7 @@ Service modules:
 - **ReturnYouTubeDislike**: Vote information
 - **LRCLIB**: Lyrics provider
 - **BetterLyrics**: Additional lyrics provider (added in v1.0.4)
+- **MochaRealm accompanist lyrics** (`com.mocharealm.accompanist:lyrics-ui` + `lyrics-core`, KMP): the ArchiveTune-style "Enhanced" lyrics renderer (see the 2026-10-12 entry)
 - **Sentry**: Crash reporting (Full version only)
 
 ## 📝 Development Guidelines
@@ -1008,6 +1009,14 @@ if (getPlatform() == Platform.Android) {
   - **The swipe on a song row** goes through `SharedViewModel.addListToQueue`, which plays a single song next whenever Add to queue is blocked (it used to do so only under Endless queue). Its icon switches to Play next while that applies.
   - The owner decided against a Spotify-style Add to queue that plays before the rest of the queue, against a two-way swipe, and against a setting for the default action. Report those requests as decided, not as missing work.
 
+- **ArchiveTune "Enhanced" lyrics style — the third lyrics renderer (2026-10-12)**: a third option in Settings → User interface → Lyrics style, next to Classic and Apple Music. `ARCHIVE_TUNE` in the same `LYRICS_STYLE` DataStore key. It replaces the whole lyrics page, not just how a line draws: MochaRealm's accompanist `KaraokeLyricsView` (per-syllable karaoke sweep, RenderEffect blur falloff on unfocused lines, spring placement between lines, breathing dots in interludes, gradient edge fades), driven by the playback-position engine ported verbatim from ArchiveTune's `LyricsEnhanced` — a `withFrameNanos` loop that projects the playhead EVERY FRAME and folds the player's ~50 ms tick back in as a bounded drift correction (±250 ms snap, 8 % per frame, ≤2 ms/frame). Drawing straight off the tick is what made the other styles feel like 30 fps; this engine is the smoothness.
+  - **The dependency pair is ArchiveTune's own, pinned exactly**: `com.mocharealm.accompanist:lyrics-ui:1.0.19` + `lyrics-core:0.4.7` (KMP, Android + JVM — this module's targets; compileSdk 37/minSdk 21 vs the app's 37/26, Kotlin 2.3-built consumed by 2.4, all in range). **Do not bump lyrics-ui to 2.x casually** — the 2.0 line restructured the API (`LyricsLazyListState`, `LyricsAnchor`, render profiles) and the integration in `ui/component/lyrics/ArchiveTuneEnhancedLyricsView.kt` is written against the 1.0.19 signature.
+  - **`LYRICS_STYLE_ARCHIVE_TUNE` lives in `LyricsDisplayPreferences` (composeApp), NOT in `DataStoreManager`**: `core` is upstream's git submodule, so app-level additions stay app-side — the style is stored and read as a plain string all the way through, so core never needs to know.
+  - **Composition copied from ArchiveTune, not approximated**: sung line anchored at 0.38 × viewport height, 72 dp keep-alive zone, `BlendMode.SrcOver`, bold 1.0× main / 0.82× accompaniment / 0.55× phonetic type scale, LRC sheets lead 300 ms while word-synced lead 0 ms, and ArchiveTune's gap→line-end rules (3 s short gap runs to the next line; longer silence caps the line at 4 s so the breathing dots own it).
+  - **Data mapping** (`ArchiveTuneEnhancedLyricsView`): `RICH_SYNCED` → one `KaraokeSyllable` per word via the existing `parseRichSyncWords`; `LINE_SYNCED` → `SyncedLine`, or a wrapping karaoke line when the line has a romanized reading (ArchiveTune's `buildWrappingKaraokeSyllables` + grapheme `BreakIterator` splitter, so CJK stands alone and clusters never split); `UNSYNCED` → ArchiveTune's plain view, with romanization and translation as quiet sub-lines. Synced translations match by time within 1 s (the Classic helper's rule); unsynced translations match by INDEX — an unsynced sheet stamps every row "0", so a time match would answer only the first line.
+  - **The lyrics-page font settings apply** (font family + size from `LyricsDisplayPreferences`), the same way ArchiveTune's enhanced mode reads its own font preference. The line-spacing slider deliberately does NOT apply: the karaoke renderer's spacing is its own fixed rhythm and a spacing override would fight the spring placement.
+  - **Gutter**: `LyricsView` early-returns into the enhanced view (it owns its list, scroll and playhead); the Apple Music player's lyrics tab counts this style as gutter-owning, and the fullscreen sheet applies ArchiveTune's own 24 dp margin for it instead of the 50 dp column. Gated on `isLyricsBlurSupported()` like Apple Music — the unfocused-line falloff IS a `RenderEffect` (API 31; Desktop always yes). A restored `ARCHIVE_TUNE` value below Android 12 falls back to Classic, the same guard Apple Music uses.
+
 ## 🔄 CLAUDE.md Auto-Update Rule (MANDATORY)
 
 After completing any of the following types of changes, the AI agent **MUST** update this CLAUDE.md file:
@@ -1032,6 +1041,6 @@ After completing any of the following types of changes, the AI agent **MUST** up
 
 *This document helps AI Agents quickly understand the SimpMusic project. Update regularly when there are major changes to architecture or structure.*
 
-**Last updated**: 2026-10-10
+**Last updated**: 2026-10-12
 **Project version**: Check latest release on GitHub
 **Maintained by**: maxrave-dev and contributors

@@ -86,6 +86,7 @@ import com.maxrave.simpmusic.extension.animateScrollAndAnchorItemTop
 import com.maxrave.simpmusic.extension.animateScrollAndCentralizeItem
 import com.maxrave.simpmusic.extension.getScreenSizeInfo
 import com.maxrave.simpmusic.extension.parseRichSyncWords
+import com.maxrave.simpmusic.ui.component.lyrics.ArchiveTuneEnhancedLyricsView
 import com.maxrave.simpmusic.ui.component.lyrics.LyricsDisplayPreferences
 import com.maxrave.simpmusic.ui.component.lyrics.lyricsFontFamily
 import com.maxrave.simpmusic.ui.theme.typo
@@ -469,6 +470,21 @@ fun LyricsView(
     // carried to another device, can still hold APPLE_MUSIC on a phone that cannot draw it.
     val lyricsStyle by dataStoreManager.lyricsStyle.collectAsStateWithLifecycle(DataStoreManager.LYRICS_STYLE_CLASSIC)
     val appleStyle = lyricsStyle == DataStoreManager.LYRICS_STYLE_APPLE_MUSIC && isLyricsBlurSupported()
+
+    // The ArchiveTune "Enhanced" style replaces the whole page, not just a line's drawing:
+    // its karaoke renderer owns the list, the autoscroll and the playhead, so the classic
+    // LazyColumn below is never built for it. The early return is the point — the enhanced
+    // view reads its own typography preferences, the way ArchiveTune's enhanced mode does.
+    if (lyricsStyle == LyricsDisplayPreferences.LYRICS_STYLE_ARCHIVE_TUNE && isLyricsBlurSupported()) {
+        ArchiveTuneEnhancedLyricsView(
+            lyricsData = lyricsData,
+            timeLine = timeLine,
+            onLineClick = onLineClick,
+            modifier = modifier,
+            footerContent = footerContent,
+        )
+        return
+    }
 
     val storedPageFont by dataStoreManager
         .getString(LyricsDisplayPreferences.PAGE_FONT_KEY)

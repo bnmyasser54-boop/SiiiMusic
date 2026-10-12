@@ -17,6 +17,14 @@ internal object LyricsDisplayPreferences {
     const val PAGE_TEXT_SIZE_KEY = "lyrics_page_text_size_sp"
     const val PAGE_LINE_SPACING_KEY = "lyrics_page_line_spacing_dp"
 
+    /**
+     * The third lyrics style: ArchiveTune's "Enhanced" mode. Defined here rather than next to
+     * [com.maxrave.domain.manager.DataStoreManager.LYRICS_STYLE_CLASSIC] on purpose — the core
+     * submodule is upstream's repo, and this style is an app-level feature the core never needs
+     * to know about: the value is stored and read as a plain string all the way through.
+     */
+    const val LYRICS_STYLE_ARCHIVE_TUNE = "ARCHIVE_TUNE"
+
     const val LIVE_ENABLED_KEY = "player_live_lyrics_enabled"
     const val LIVE_TEXT_SIZE_KEY = "player_live_lyrics_text_size_sp"
     const val LIVE_LINE_COUNT_KEY = "player_live_lyrics_line_count"

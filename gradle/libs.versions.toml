@@ -97,8 +97,17 @@ conveyor = "2.0"
 # Login sync: QR encode (Desktop) + decode (Android), and the Android scanner's camera
 zxing = "3.5.4"
 camerax = "1.6.2"
+# The ArchiveTune-style "Enhanced" lyrics renderer: MochaRealm's accompanist karaoke
+# view. This is the exact dependency pair ArchiveTune itself pins (lyrics-ui 1.0.19 +
+# lyrics-core 0.4.7), so the enhanced style draws with the very code ArchiveTune ships,
+# not a lookalike. Both artifacts are Kotlin Multiplatform (Android + JVM), matching this
+# module's targets.
+accompanist-lyrics-ui = "1.0.19"
+accompanist-lyrics-core = "0.4.7"
 
 [libraries]
+accompanist-lyrics-ui = { group = "com.mocharealm.accompanist", name = "lyrics-ui", version.ref = "accompanist-lyrics-ui" }
+accompanist-lyrics-core = { group = "com.mocharealm.accompanist", name = "lyrics-core", version.ref = "accompanist-lyrics-core" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
 camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
 camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }

@@ -95,6 +95,7 @@ import com.maxrave.simpmusic.extension.lengthLabel
 import com.maxrave.simpmusic.extension.getScreenSizeInfo
 import com.maxrave.simpmusic.extension.hsvToColor
 import com.maxrave.simpmusic.getPlatform
+import com.maxrave.simpmusic.ui.component.lyrics.LyricsDisplayPreferences
 import com.maxrave.simpmusic.ui.component.lyrics.ShareLyricsSheet
 import com.maxrave.simpmusic.ui.component.lyrics.toShareLyricsLines
 import com.maxrave.simpmusic.ui.icon.Close
@@ -139,6 +140,10 @@ import kotlin.math.sin
 // The gutter this sheet has always used for its lyrics column.
 private val FULLSCREEN_LYRICS_GUTTER = 50.dp
 
+// ArchiveTune hosts its enhanced lyrics pane with a 24dp horizontal margin; under the
+// enhanced style the sheet reproduces that exactly instead of applying its own gutter.
+private val ARCHIVE_TUNE_LYRICS_GUTTER = 24.dp
+
 // Landscape insets. Desktop's top leaves room for the chrome row drawn over the layout (a 48dp
 // pill inside 12dp of padding); Android's sits below the status bar instead.
 private val LANDSCAPE_DESKTOP_TOP_PADDING = 72.dp
@@ -177,6 +182,11 @@ fun FullscreenLyricsContent(
         .collectAsStateWithLifecycle(DataStoreManager.LYRICS_STYLE_CLASSIC)
     val fullscreenAppleLyrics =
         fullscreenLyricsStyle == DataStoreManager.LYRICS_STYLE_APPLE_MUSIC && isLyricsBlurSupported()
+    // The ArchiveTune enhanced renderer insets its lines itself too, but by ITS own measure
+    // (the karaoke view has no extra gutter), so this sheet applies ArchiveTune's own 24dp
+    // page margin for it instead of splitting Apple's.
+    val fullscreenEnhancedLyrics =
+        fullscreenLyricsStyle == LyricsDisplayPreferences.LYRICS_STYLE_ARCHIVE_TUNE && isLyricsBlurSupported()
     val screenDataState by sharedViewModel.nowPlayingScreenData.collectAsStateWithLifecycle()
     val timelineState by sharedViewModel.timeline.collectAsStateWithLifecycle()
     // Same correction LyricsView applies to the sheet itself, so the line the share picker opens on
@@ -482,12 +492,14 @@ fun FullscreenLyricsContent(
                                 // text still lines up with this screen's header and slider. Dropping
                                 // the sheet's side to zero (which this did for one revision) left the
                                 // lyrics sitting further out than everything else on the page.
+                                // The ArchiveTune enhanced page takes ArchiveTune's own margin:
+                                // it is the look being replicated, down to the gutter.
                                 .padding(
                                     horizontal =
-                                        if (fullscreenAppleLyrics) {
-                                            FULLSCREEN_LYRICS_GUTTER - AppleMusicLyricPaddingX
-                                        } else {
-                                            FULLSCREEN_LYRICS_GUTTER
+                                        when {
+                                            fullscreenAppleLyrics -> FULLSCREEN_LYRICS_GUTTER - AppleMusicLyricPaddingX
+                                            fullscreenEnhancedLyrics -> ARCHIVE_TUNE_LYRICS_GUTTER
+                                            else -> FULLSCREEN_LYRICS_GUTTER
                                         },
                                 ),
                     ) {

@@ -180,6 +180,12 @@ kotlin {
             // Liquid glass
             implementation(libs.liquid.glass)
             implementation(libs.liquid.glass.shape)
+
+            // The ArchiveTune-style "Enhanced" lyrics renderer: MochaRealm's accompanist
+            // karaoke view (KMP, Android + JVM — the same pair this module targets). The
+            // exact versions ArchiveTune pins; see the note in gradle/libs.versions.toml.
+            implementation(libs.accompanist.lyrics.ui)
+            implementation(libs.accompanist.lyrics.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

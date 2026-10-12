@@ -131,6 +131,7 @@ import com.maxrave.simpmusic.ui.component.LoadingDialog
 import com.maxrave.simpmusic.ui.component.RippleIconButton
 import com.maxrave.simpmusic.ui.component.SettingGroup
 import com.maxrave.simpmusic.ui.component.SettingItem
+import com.maxrave.simpmusic.ui.component.lyrics.LyricsDisplayPreferences
 import com.maxrave.simpmusic.ui.icon.ArrowBackIosNew
 import com.maxrave.simpmusic.ui.icon.Close
 import com.maxrave.simpmusic.ui.icon.Error
@@ -792,6 +793,13 @@ fun SettingScreen(
                                 DataStoreManager.LYRICS_STYLE_CLASSIC to stringResource(Res.string.lyrics_style_classic),
                                 DataStoreManager.LYRICS_STYLE_APPLE_MUSIC to
                                     stringResource(Res.string.lyrics_style_apple_music) + requiresAndroid12,
+                                // ArchiveTune's Enhanced mode — the karaoke renderer with the
+                                // per-syllable sweep and the spring line transitions. Same blur
+                                // floor as Apple Music: its unfocused-line falloff IS a
+                                // RenderEffect, so below Android 12 it would draw as a flat
+                                // dimmed list with nothing to show for the choice.
+                                LyricsDisplayPreferences.LYRICS_STYLE_ARCHIVE_TUNE to
+                                    stringResource(Res.string.lyrics_style_archive_tune) + requiresAndroid12,
                             )
                         SettingItem(
                             title = stringResource(Res.string.lyrics_style),

@@ -49,6 +49,7 @@ import com.maxrave.simpmusic.ui.component.AppleMusicLyricPaddingX
 import com.maxrave.simpmusic.ui.component.LyricsOffsetFloatingControl
 import com.maxrave.simpmusic.ui.component.LyricsView
 import com.maxrave.simpmusic.ui.component.hasTiming
+import com.maxrave.simpmusic.ui.component.lyrics.LyricsDisplayPreferences
 import com.maxrave.simpmusic.ui.component.lyrics.ShareLyricsSheet
 import com.maxrave.simpmusic.ui.component.lyrics.toShareLyricsLines
 import com.maxrave.simpmusic.ui.icon.OpenInFull
@@ -107,7 +108,11 @@ internal fun AppleMusicLyricsView(
     // the header right above them sits at 20dp. Same split the fullscreen sheet already does:
     // the caller contributes whatever the renderer does not, so the TOTAL is the same either way.
     val lyricsStyle by dataStoreManager.lyricsStyle.collectAsStateWithLifecycle(DataStoreManager.LYRICS_STYLE_CLASSIC)
-    val rendererOwnsGutter = lyricsStyle == DataStoreManager.LYRICS_STYLE_APPLE_MUSIC && isLyricsBlurSupported()
+    // Apple's renderer and the ArchiveTune enhanced renderer both inset their own lines so
+    // their blur has margin to spill into; under either, this page contributes no gutter.
+    val rendererOwnsGutter =
+        (lyricsStyle == DataStoreManager.LYRICS_STYLE_APPLE_MUSIC ||
+            lyricsStyle == LyricsDisplayPreferences.LYRICS_STYLE_ARCHIVE_TUNE) && isLyricsBlurSupported()
 
     // Apple hands the whole page to the lyrics once you stop touching it, and brings the transport
     // back the moment you touch it again. rememberSaveable so a rotation does not yank the
